@@ -1,0 +1,1157 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Ultimate CPU Adventure</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F5F5F4;
+            color: #292524;
+        }
+        .nav-link {
+            transition: color 0.3s, border-bottom-color 0.3s;
+            border-bottom: 2px solid transparent;
+        }
+        .nav-link.active, .nav-link:hover {
+            color: #E11D48;
+            border-bottom-color: #E11D48;
+        }
+        .content-section {
+            display: none;
+            min-height: 90vh;
+        }
+        .content-section.active {
+            display: block;
+        }
+        .interactive-card {
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid transparent;
+        }
+        .interactive-card.selected {
+            border-color: #E11D48;
+            transform: translateY(-5px);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+        }
+        .fde-component {
+            transition: all 0.5s ease-in-out;
+            border: 2px solid #D6D3D1;
+        }
+        .fde-component.highlight {
+            background-color: #FB923C;
+            color: #1C1917;
+            border-color: #F97316;
+            transform: scale(1.05);
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            animation: pulse-highlight 1.5s infinite;
+        }
+        .chart-container {
+            position: relative;
+            width: 100%;
+            max-width: 700px;
+            margin-left: auto;
+            margin-right: auto;
+            height: 400px;
+            max-height: 50vh;
+        }
+        
+        .fde-diagram {
+            position: relative;
+            padding: 2rem;
+        }
+        .data-point {
+            position: absolute;
+            width: 1rem;
+            height: 1rem;
+            background-color: #3B82F6;
+            border-radius: 50%;
+            transition: all 0.5s ease-in-out;
+            z-index: 11;
+        }
+        @keyframes pulse-highlight {
+            0% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0.4); }
+            70% { box-shadow: 0 0 0 10px rgba(249, 115, 22, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(249, 115, 22, 0); }
+        }
+
+        .pencil-stroke {
+            stroke: #292524;
+            stroke-width: 2;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+            fill: none;
+        }
+        .pencil-fill {
+            fill: #F5F5F4;
+            stroke: none;
+        }
+        .pencil-line {
+            stroke: #292524;
+            stroke-width: 2;
+            fill: none;
+        }
+        .text-label {
+            fill: #292524;
+            font-family: 'Inter', sans-serif;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        .quiz-option {
+            transition: all 0.2s ease;
+        }
+        .quiz-option.correct {
+            background-color: #D1FAE5;
+            border-color: #10B981;
+        }
+        .quiz-option.incorrect {
+            background-color: #FEE2E2;
+            border-color: #EF4444;
+        }
+        .video-embed {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 aspect ratio */
+            height: 0;
+        }
+        .video-embed iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border-radius: 0.75rem; /* 12px, same as rounded-xl */
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <header class="bg-stone-50/90 backdrop-blur-md sticky top-0 z-50 shadow-sm">
+        <nav class="container mx-auto px-6 py-4 flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-stone-800">The Ultimate CPU Adventure 🚀</h1>
+            <div class="hidden md:flex space-x-6">
+                <a href="#core" class="nav-link active font-medium pb-1">Core Components</a>
+                <a href="#registers" class="nav-link font-medium pb-1">Registers</a>
+                <a href="#buses" class="nav-link font-medium pb-1">Buses</a>
+                <a href="#fde" class="nav-link font-medium pb-1">FDE Cycle</a>
+                <a href="#arch" class="nav-link font-medium pb-1">Architectures</a>
+                <a href="#videos" class="nav-link font-medium pb-1">Videos</a>
+                <a href="#quiz-section" class="nav-link font-medium pb-1">Quiz</a>
+                <a href="#resources" class="nav-link font-medium pb-1">Resources</a>
+            </div>
+            <div class="md:hidden">
+                <select id="mobile-nav" class="bg-white border border-stone-300 rounded-md py-2 px-3 text-stone-700">
+                    <option value="core">Core Components</option>
+                    <option value="registers">Registers</option>
+                    <option value="buses">Buses</option>
+                    <option value="fde">FDE Cycle</option>
+                    <option value="arch">Architectures</option>
+                    <option value="videos">Videos</option>
+                    <option value="quiz-section">Quiz</option>
+                    <option value="resources">Resources</option>
+                </select>
+            </div>
+        </nav>
+    </header>
+
+    <main class="container mx-auto p-4 md:p-8">
+        
+        <section id="core" class="content-section active">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-2">1. Meet the CPU Team!</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">Think of the CPU as the super-smart manager of your computer. But even a manager needs a team! Let's meet the two key players: the <strong>Control Unit</strong> and the <strong>Arithmetic Logic Unit</strong>.</p>
+            </div>
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                 <div class="flex justify-center items-center p-4 bg-white rounded-xl shadow-lg">
+                    <canvas id="core-canvas" width="400" height="300" class="rounded-lg max-w-full h-auto"></canvas>
+                </div>
+                <div id="core-info-panel" class="bg-white p-8 rounded-xl shadow-lg min-h-[200px]">
+                    <h3 id="core-info-title" class="text-2xl font-bold mb-4 text-stone-800">Choose a Teammate!</h3>
+                    <p id="core-info-text" class="text-stone-700">Click on each card to discover their superpower! You'll see their detailed job description right here.</p>
+                    <div class="space-y-6 mt-6">
+                        <div id="cu-card" class="interactive-card bg-white p-6 rounded-xl shadow-lg">
+                            <h3 class="text-2xl font-bold mb-2 text-rose-600">🧠 The Control Unit (CU)</h3>
+                            <p class="text-stone-700">The ultimate project manager and traffic cop! The CU's job is to direct all operations, fetching instructions and coordinating the flow of data. It ensures everything happens in the right place at the right time. Without it, the CPU would be chaos!</p>
+                        </div>
+                        <div id="alu-card" class="interactive-card bg-white p-6 rounded-xl shadow-lg">
+                            <h3 class="text-2xl font-bold mb-2 text-rose-600">🧮 The Arithmetic Logic Unit (ALU)</h3>
+                            <p class="text-stone-700">This is the math whiz! The ALU performs all the calculations and logical comparisons. From adding two numbers to checking if one value is greater than another, every piece of data-crunching happens here. It's the engine of the CPU's work. It also sets status flags (like a "zero" or "carry" flag) to let the CU know the outcome of a calculation.</p>
+                        </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="registers" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-2">2. The CPU's Mini-Storage: Registers</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">Think of registers as tiny, super-fast sticky notes right on the CPU's desk. They hold the data and instructions the CPU is working on <strong>right now</strong> so it doesn't have to go all the way to memory. Let's see what's on the desk!</p>
+            </div>
+             <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 items-start">
+                 <div class="flex justify-center items-center p-4 bg-white rounded-xl shadow-lg">
+                    <canvas id="registers-canvas" width="400" height="300" class="rounded-lg max-w-full h-auto"></canvas>
+                </div>
+                <div class="space-y-4">
+                    <div id="pc-card" class="interactive-card bg-white p-4 rounded-lg shadow"><strong>PC:</strong> Program Counter</div>
+                    <div id="mar-card" class="interactive-card bg-white p-4 rounded-lg shadow"><strong>MAR:</strong> Memory Address Register</div>
+                    <div id="mdr-card" class="interactive-card bg-white p-4 rounded-lg shadow"><strong>MDR:</strong> Memory Data Register</div>
+                    <div id="ir-card" class="interactive-card bg-white p-4 rounded-lg shadow"><strong>IR:</strong> Instruction Register</div>
+                    <div id="ac-card" class="interactive-card bg-white p-4 rounded-lg shadow"><strong>AC:</strong> Accumulator</div>
+                    <div class="bg-white p-8 rounded-xl shadow-lg">
+                        <h3 id="reg-info-title" class="text-2xl font-bold mb-4 text-rose-600">Click a Register to Learn Its Role!</h3>
+                        <p id="reg-info-text" class="text-stone-700">Each register has a very specific and important job. Find out what they do!</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="buses" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-2">3. The Information Highways: Buses</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">Buses are the electrical highways that carry all the information around your computer. Without them, the CPU couldn't communicate with RAM or anything else! Let's explore the three types of buses.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+                 <div class="flex justify-center items-center p-4 bg-white rounded-xl shadow-lg">
+                    <canvas id="buses-canvas" width="400" height="300" class="rounded-lg max-w-full h-auto"></canvas>
+                </div>
+                <div class="grid grid-cols-1 gap-6">
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-2xl font-bold mb-2 text-rose-600">📍 Address Bus</h3>
+                        <p class="text-stone-700">This is a <strong>one-way</strong> street from the CPU to RAM. Think of it as a delivery truck that only carries one thing: a memory address (the specific location of data). The width of this bus determines how much RAM your system can access, because a wider bus can carry a bigger "number" (address). For example, a 32-bit address bus can access $2^{32}$ unique locations, or about 4 GB.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-2xl font-bold mb-2 text-rose-600">↔️ Data Bus</h3>
+                        <p class="text-stone-700">This is a <strong>two-way</strong> highway for the actual payload: the data! Whether the CPU is reading information from RAM or sending new information to be stored, it travels along the data bus. The wider this bus is, the more data can be moved at once, leading to a faster overall system.</p>
+                    </div>
+                    <div class="bg-white p-6 rounded-xl shadow-lg">
+                        <h3 class="text-2xl font-bold mb-2 text-rose-600">🚦 Control Bus</h3>
+                        <p class="text-stone-700">The control bus is the nervous system, a <strong>two-way</strong> street carrying all the command and status signals. When the CPU needs to read from memory, the Control Unit sends a signal on this bus. When a component is ready, it sends a signal back. This bus ensures perfect timing and coordination.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="fde" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-2">4. The CPU's Daily Job: The FDE Cycle</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">Every second, your CPU performs billions of these <strong>Fetch-Decode-Execute</strong> cycles. This is how it processes every single instruction. Let's watch one in action! The light blue circle represents the data moving.</p>
+            </div>
+            <div class="bg-white p-8 rounded-xl shadow-lg fde-diagram">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-4">
+                        <h3 class="text-xl font-bold text-center">CPU Registers</h3>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div id="fde-pc" class="fde-component p-3 rounded-lg text-center"><strong>PC:</strong> <span id="pc-val">0</span></div>
+                            <div id="fde-mar" class="fde-component p-3 rounded-lg text-center"><strong>MAR:</strong> <span id="mar-val">...</span></div>
+                            <div id="fde-ir" class="fde-component p-3 rounded-lg text-center"><strong>IR:</strong> <span id="ir-val">...</span></div>
+                            <div id="fde-mdr" class="fde-component p-3 rounded-lg text-center"><strong>MDR:</strong> <span id="mdr-val">...</span></div>
+                            <div id="fde-cu" class="fde-component p-3 rounded-lg text-center col-span-2"><strong>Control Unit</strong></div>
+                            <div id="fde-ac" class="fde-component p-3 rounded-lg text-center"><strong>Accumulator:</strong> <span id="ac-val">...</span></div>
+                        </div>
+                    </div>
+                    <div class="space-y-4">
+                         <h3 class="text-xl font-bold text-center">RAM (Memory)</h3>
+                         <div id="fde-ram" class="space-y-2 bg-stone-100 p-4 rounded-lg"></div>
+                    </div>
+                </div>
+                <div id="data-point" class="data-point" style="display: none;"></div>
+
+                <div class="mt-8 pt-6 border-t border-stone-200">
+                    <div class="flex flex-col md:flex-row items-center justify-between gap-4">
+                        <div class="flex-1">
+                            <h4 id="fde-stage" class="text-2xl font-bold text-rose-600">Stage: Idle</h4>
+                            <p id="fde-explanation" class="text-stone-600 mt-1">Click "Start Cycle" to begin the simulation.</p>
+                        </div>
+                        <button id="fde-btn" class="bg-rose-600 text-white font-bold py-3 px-6 rounded-lg shadow-md hover:bg-rose-700 transition-colors">Start Cycle</button>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section id="arch" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-2">5. Why Don't More Cores Always Mean More Speed?</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">This is a common misconception! It's not about having more chefs in the kitchen; it's about whether the recipe can be split up. This section compares different processor types and shows you what they're best at.</p>
+            </div>
+             <div class="bg-white p-8 rounded-xl shadow-lg">
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-8 items-start">
+                    <div>
+                        <h3 class="text-2xl font-bold text-rose-600 mb-2">Single-Core CPUs</h3>
+                         <div class="flex justify-center items-center mb-4 p-4">
+                            <canvas id="single-core-canvas" width="200" height="100"></canvas>
+                        </div>
+                        <p class="text-stone-700">A <strong>single-core</strong> CPU has one processing unit and can only handle one instruction at a time. It's like a person who can only do one task at a time, no matter how fast they are. While simple and efficient for non-demanding applications, they struggle with multitasking as they must quickly switch between tasks.</p>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold text-rose-600 mb-2">Multi-Core CPUs</h3>
+                         <div class="flex justify-center items-center mb-4 p-4">
+                            <canvas id="multi-core-canvas" width="200" height="100"></canvas>
+                        </div>
+                        <p class="text-stone-700">A <strong>multi-core</strong> CPU has two or more cores on a single chip, allowing it to execute multiple instructions simultaneously. This is ideal for multitasking and demanding applications, but the performance gain depends on whether the software is optimized for parallel processing. It's the key to modern multitasking!</p>
+                        <h4 class="text-xl font-bold mt-4 text-rose-500">The Power of Pipelining (HL Extension)</h4>
+                        <p class="text-stone-600">Modern multi-core CPUs use <strong>pipelining</strong>, a technique where the CPU starts working on the next instruction (fetching) before the current one is finished (executing). It's like an assembly line: one worker can be adding a wheel to a car while another is painting the car that came before it. This allows for a huge increase in throughput and efficiency.</p>
+                    </div>
+                     <div>
+                        <h3 class="text-2xl font-bold text-rose-600 mb-2">Co-Processors (e.g., GPU)</h3>
+                        <div class="flex justify-center items-center mb-4 p-4">
+                            <canvas id="gpu-canvas" width="200" height="100"></canvas>
+                        </div>
+                        <p class="text-stone-700">A <strong>co-processor</strong> is a specialized chip that assists the main CPU by offloading specific, repetitive tasks. A <strong>GPU</strong> is a prime example, with thousands of small cores optimized for tasks like rendering graphics and machine learning, which involve performing the same operation on massive datasets. They're amazing at parallel tasks, making your games and videos look incredible!</p>
+                    </div>
+                </div>
+                <div class="mt-12">
+                    <h3 class="text-3xl font-bold mb-4">CPU vs. GPU: A Quick Comparison (HL Extension)</h3>
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full bg-white rounded-xl shadow-lg border border-stone-200">
+                            <thead>
+                                <tr class="bg-stone-100 text-left text-sm font-semibold text-stone-700">
+                                    <th class="py-3 px-4 rounded-tl-xl">Feature</th>
+                                    <th class="py-3 px-4">CPU (Central Processing Unit)</th>
+                                    <th class="py-3 px-4 rounded-tr-xl">GPU (Graphics Processing Unit)</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-stone-200">
+                                <tr>
+                                    <td class="py-3 px-4 font-medium">Core Count</td>
+                                    <td class="py-3 px-4">A few powerful cores (typically 2 to 16)</td>
+                                    <td class="py-3 px-4">Hundreds to thousands of smaller, simpler cores</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-4 font-medium">Core Speed</td>
+                                    <td class="py-3 px-4">Very fast; optimized for single-thread performance</td>
+                                    <td class="py-3 px-4">Slower individually, but operate in massive parallel</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-4 font-medium">Task Specialization</td>
+                                    <td class="py-3 px-4">General purpose; handles a wide variety of tasks sequentially</td>
+                                    <td class="py-3 px-4">Specialized for massively parallel, repetitive tasks</td>
+                                </tr>
+                                <tr>
+                                    <td class="py-3 px-4 font-medium">Best For...</td>
+                                    <td class="py-3 px-4">Operating systems, single-threaded applications, complex calculations with dependencies</td>
+                                    <td class="py-3 px-4">Graphics rendering, machine learning, cryptocurrency mining, scientific simulations</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="text-center mb-8 mt-12">
+                    <div class="inline-flex rounded-md shadow-sm" role="group">
+                        <button type="button" class="chart-btn active bg-rose-600 text-white py-2 px-4 text-sm font-medium border border-rose-600 rounded-l-lg" data-type="sequential">Sequential Tasks</button>
+                        <button type="button" class="chart-btn py-2 px-4 text-sm font-medium text-stone-900 bg-white border-t border-b border-stone-200 hover:bg-stone-100" data-type="multitasking">Simple Multitasking</button>
+                        <button type="button" class="chart-btn py-2 px-4 text-sm font-medium text-stone-900 bg-white border rounded-r-md border-stone-200 hover:bg-stone-100" data-type="parallel">Massively Parallel Tasks</button>
+                    </div>
+                </div>
+                <div class="chart-container">
+                    <canvas id="arch-chart"></canvas>
+                </div>
+               </div>
+        </section>
+
+        <section id="videos" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-2">6. Video Tutorials</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">Watch these curated videos to deepen your understanding of CPU components, registers, buses, the FDE cycle, and computer architectures, tailored to the IB DP Computer Science curriculum.</p>
+            </div>
+            <div class="bg-white p-8 rounded-xl shadow-lg">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div class="space-y-6">
+                        <div class="video-embed">
+                            <iframe src="https://www.youtube.com/embed/pOD9UTlO33A" title="IBCS Lesson 3 - A 1-1-1 CPU Components" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                        <div class="video-embed">
+                            <iframe src="https://www.youtube.com/embed/Rtj_31vemao" title="IB Computer Science - Topic 2" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                        <div class="video-embed">
+                            <iframe src="https://www.youtube.com/embed/cqEqWjO5xGo" title="IB Computer Science - Topic 6 - Resource Management" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                        <div class="video-embed">
+                            <iframe src="https://www.youtube.com/embed/i9PmGoWb7G8" title="IB Computer Science Lesson 19 - A 1-3-3 Compare" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                    <div class="space-y-6">
+                        <div class="video-embed">
+                            <iframe  src="https://www.youtube.com/embed/vgPFzblBh7w?si=ZnV2RoAkmVPzKIrH " title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>" title="CPU Architecture - IB Computer Science" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                        <div class="video-embed">
+                            <iframe src="https://www.youtube.com/embed/ByllwN8q2ss?si=qEK7Y7D40R1BgPXK" title="Fetch-Decode-Execute Cycle Explained" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                        <div class="video-embed">
+                            <iframe src="https://www.youtube.com/embed/6_PHIL4LZEU?si=qwadjM7BuQ4RzmO-" title="Von Neumann vs Harvard Architecture" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                        <div class="video-embed">
+                            <iframe src="https://www.youtube.com/embed/Z5JC9Ve1sfI?si=PX8P_fb_7-p4g78I" title="Understanding CPU Registers" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+                        </div>
+                    </div>
+                </div>
+                <div class="mt-6">
+                    <p class="text-stone-700">Explore more videos in these playlists:</p>
+                    <a href="https://www.youtube.com/playlist?list=PLJnnoL7TGb0xRz5My8Hzg7EbXpEajGjgf" target="_blank" class="text-blue-500 hover:underline">IB DP Computer Science Playlist</a><br>
+                    <a href="https://www.youtube.com/playlist?list=PLqK_fRVXlXea12vGDmf4h5ZrVjUWnKvCb" target="_blank" class="text-blue-500 hover:underline">Another IB Computer Science Playlist</a>
+                </div>
+            </div>
+        </section>
+
+        <section id="quiz-section" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-2">7. Test Your Knowledge!</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">You've explored the core of the CPU. Now, let's see what you've learned! Answer these questions to solidify your understanding.</p>
+            </div>
+            <div id="quiz-container" class="max-w-3xl mx-auto bg-white p-8 rounded-xl shadow-lg">
+            </div>
+        </section>
+
+        <section id="resources" class="content-section">
+            <div class="text-center mb-12">
+                <h2 class="text-4xl font-bold mb-2">8. Resources</h2>
+                <p class="text-lg text-stone-600 max-w-3xl mx-auto">Explore additional resources to deepen your understanding of CPU components, registers, buses, the FDE cycle, and architectures in IB DP Computer Science.</p>
+            </div>
+            <div class="bg-white p-8 rounded-xl shadow-lg">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+                    <div>
+                        <h3 class="text-2xl font-bold mb-4 text-rose-600">Resources</h3>
+                        <div class="space-y-6">
+                            <div class="bg-stone-100 p-6 rounded-xl">
+                                <h4 class="text-xl font-bold mb-2">IB Computer Science Guide</h4>
+                                <p class="text-stone-700">Official IB guide covering Topic 2 (Computer Organization) and Topic 6 (Resource Management).</p>
+                                <a href="https://pbaumgarten.com/assets/ib-compsci-guide-en-2025.pdf" target="_blank" class="text-blue-500 hover:underline">Visit Site</a>
+                            </div>
+                        
+                            <div class="bg-stone-100 p-6 rounded-xl">
+                                <h4 class="text-xl font-bold mb-2">Graded CS Notes</h4>
+                                <p class="text-stone-700">Detailed notes on CPU architecture, registers, and buses for IB Computer Science.</p>
+                                <a href="https://graded-cs-resources.github.io/IB-Computer-Science-Notes/paper1/np2.3_architecture.html" target="_blank" class="text-blue-500 hover:underline">Visit Site</a>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <h3 class="text-2xl font-bold mb-4 text-rose-600">More Resources</h3>
+                        <div class="space-y-6">
+                            <div class="bg-stone-100 p-6 rounded-xl">
+                                <h4 class="text-xl font-bold mb-2">Crash Course Computer Science</h4>
+                                <p class="text-stone-700">Interactive lessons on CPU operation, FDE cycle, and architectures.</p>
+                                <a href="https://www.youtube.com/playlist?list=PL8dPuuaLjXtNlUrzyH5r6jN9ulIgZBpdo" target="_blank" class="text-blue-500 hover:underline">Visit Playlist</a>
+                            </div>
+                            <div class="bg-stone-100 p-6 rounded-xl">
+                                <h4 class="text-xl font-bold mb-2">IB CS Topic 2 Notes</h4>
+                                <p class="text-stone-700">In-depth notes on computer organization, including block diagrams and system buses.</p>
+                                <a href="https://ibcomputerscience.xyz/topic-2-computer-organization/" target="_blank" class="text-blue-500 hover:underline">Visit Site</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+<footer class="fixed bottom-0 left-0 w-full bg-white py-2 border-t border-stone-200 text-center text-sm text-stone-500">
+    <div class="container mx-auto px-6 flex justify-center items-center space-x-4">
+        <a href="https://www.linkedin.com/in/emmayeboah360/" class="text-blue-600 hover:text-blue-800 social-link" target="_blank">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 0h-14c-2.761 0-5 2.239-5 5v14c0 2.761 2.239 5 5 5h14c2.762 0 5-2.239 5-5v-14c0-2.761-2.238-5-5-5zm-11 19h-3v-11h3v11zm-1.5-12.268c-.966 0-1.75-.79-1.75-1.762s.784-1.762 1.75-1.762 1.75.79 1.75 1.762-.784 1.762-1.75 1.762zm13.5 12.268h-3v-5.604c0-3.368-4-3.113-4 0v5.604h-3v-11h3v1.765c1.396-2.586 7-2.777 7 2.476v6.759z"/>
+            </svg>
+        </a>
+        <a href="mailto:yemmanuel308@gmail.com" class="text-rose-600 hover:text-rose-800 social-link">
+            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M12 12.713l-11.75 6.287 11.75 5.5zM23.75 18.995l-11.75-6.287v11.748zM12 11.287l-12-6.287v1.868l12 6.287l12-6.287v-1.868z"/>
+            </svg>
+        </a>
+        <p class="pl-4">&copy; 2025 Emmanuel Yeboah. All rights reserved.</p>
+    </div>
+</footer>
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const navLinks = document.querySelectorAll('.nav-link');
+            const mobileNav = document.getElementById('mobile-nav');
+            const contentSections = document.querySelectorAll('.content-section');
+
+            function showSection(id) {
+                contentSections.forEach(section => {
+                    section.classList.toggle('active', section.id === id);
+                });
+                navLinks.forEach(link => {
+                    link.classList.toggle('active', link.hash === '#' + id);
+                });
+                if (mobileNav.value !== id) {
+                    mobileNav.value = id;
+                }
+                window.scrollTo(0, 0);
+            }
+
+            navLinks.forEach(link => {
+                link.addEventListener('click', (e) => {
+                    e.preventDefault();
+                    const targetId = link.hash.substring(1);
+                    showSection(targetId);
+                    history.pushState(null, '', link.hash);
+                });
+            });
+            
+            mobileNav.addEventListener('change', () => {
+                const targetId = mobileNav.value;
+                showSection(targetId);
+                history.pushState(null, '', '#' + targetId);
+            });
+
+            const initialSection = window.location.hash ? window.location.hash.substring(1) : 'core';
+            showSection(initialSection);
+            
+            window.addEventListener('popstate', () => {
+                 const targetId = window.location.hash ? window.location.hash.substring(1) : 'core';
+                 showSection(targetId);
+            });
+
+            const coreInfo = {
+                'cu-card': {
+                    title: "🧠 The Control Unit (CU)",
+                    text: "The ultimate project manager and traffic cop! The CU's job is to direct all operations, fetching instructions and coordinating the flow of data. It ensures everything happens in the right place at the right time. Without it, the CPU would be chaos!"
+                },
+                'alu-card': {
+                    title: "🧮 The Arithmetic Logic Unit (ALU)",
+                    text: "This is the math whiz! The ALU performs all the calculations and logical comparisons. From adding two numbers to checking if one value is greater than another, every piece of data-crunching happens here. It's the engine of the CPU's work. It also sets status flags (like a 'zero' or 'carry' flag) to let the CU know the outcome of a calculation."
+                }
+            };
+            const coreCards = document.querySelectorAll('#cu-card, #alu-card');
+            const coreInfoTitle = document.getElementById('core-info-title');
+            const coreInfoText = document.getElementById('core-info-text');
+
+            coreCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    coreCards.forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    const info = coreInfo[card.id];
+                    coreInfoTitle.textContent = info.title;
+                    coreInfoText.textContent = info.text;
+                });
+            });
+
+            const regInfo = {
+                'pc-card': { title: 'Program Counter (PC)', text: 'Keeps track of the memory address for the *next* instruction to be fetched. After an instruction is fetched, the PC increments to point to the next one in sequence.' },
+                'mar-card': { title: 'Memory Address Register (MAR)', text: 'Holds the memory address of the data or instruction that is about to be read from or written to. It\'s the "address book" for memory operations.' },
+                'mdr-card': { title: 'Memory Data Register (MDR)', text: 'A two-way register that holds data fetched from memory (and ready to be used by the CPU) or data waiting to be stored in memory. It acts as a temporary buffer.' },
+                'ir-card': { title: 'Instruction Register (IR)', text: 'Holds the current instruction that is being decoded and executed. The Control Unit looks at this register to understand what to do next.' },
+                'ac-card': { title: 'Accumulator (AC)', text: 'A general-purpose register that holds the intermediate results of arithmetic and logic operations. Think of it as the CPU\'s scratchpad for calculations.' }
+            };
+
+            const regCards = document.querySelectorAll('#pc-card, #mar-card, #mdr-card, #ir-card, #ac-card');
+            const regInfoTitle = document.getElementById('reg-info-title');
+            const regInfoText = document.getElementById('reg-info-text');
+
+            regCards.forEach(card => {
+                card.addEventListener('click', () => {
+                    regCards.forEach(c => c.classList.remove('selected'));
+                    card.classList.add('selected');
+                    const info = regInfo[card.id];
+                    regInfoTitle.textContent = info.title;
+                    regInfoText.textContent = info.text;
+                });
+            });
+
+            const ram = [
+                { address: 0, instruction: 'LOAD 4', data: null },
+                { address: 1, instruction: 'ADD 5', data: null },
+                { address: 2, instruction: 'STORE 6', data: null },
+                { address: 3, instruction: 'HALT', data: null },
+                { address: 4, instruction: null, data: 10 },
+                { address: 5, instruction: null, data: 5 },
+                { address: 6, instruction: null, data: 0 }
+            ];
+
+            const fdeRamContainer = document.getElementById('fde-ram');
+            ram.forEach(mem => {
+                const memDiv = document.createElement('div');
+                memDiv.id = `ram-${mem.address}`;
+                memDiv.className = 'fde-component p-2 rounded-md text-sm flex justify-between';
+                memDiv.innerHTML = `<span><strong>${mem.address}:</strong> ${mem.instruction || 'DATA'}</span><span class="font-mono">${mem.data !== null ? mem.data : '...'}</span>`;
+                fdeRamContainer.appendChild(memDiv);
+            });
+
+            const fdeBtn = document.getElementById('fde-btn');
+            const fdeStage = document.getElementById('fde-stage');
+            const fdeExplanation = document.getElementById('fde-explanation');
+            const components = {
+                pc: document.getElementById('fde-pc'),
+                mar: document.getElementById('fde-mar'),
+                mdr: document.getElementById('fde-mdr'),
+                ir: document.getElementById('fde-ir'),
+                cu: document.getElementById('fde-cu'),
+                ac: document.getElementById('fde-ac'),
+                ram: document.getElementById('fde-ram')
+            };
+            const values = {
+                pc: document.getElementById('pc-val'),
+                mar: document.getElementById('mar-val'),
+                mdr: document.getElementById('mdr-val'),
+                ir: document.getElementById('ir-val'),
+                ac: document.getElementById('ac-val')
+            };
+
+            let currentStage = 0;
+            let cycleTimeout;
+
+            function resetFDE() {
+                currentStage = 0;
+                fdeBtn.textContent = 'Start Cycle';
+                fdeBtn.disabled = false;
+                fdeStage.textContent = 'Stage: Idle';
+                fdeExplanation.textContent = 'Click "Start Cycle" to begin the simulation.';
+                Object.values(components).forEach(comp => comp.classList.remove('highlight'));
+                document.querySelectorAll('.fde-component').forEach(c => c.classList.remove('highlight'));
+                values.pc.textContent = '0';
+                values.mar.textContent = '...';
+                values.mdr.textContent = '...';
+                values.ir.textContent = '...';
+                values.ac.textContent = '...';
+                ram[6].data = 0;
+                document.querySelector(`#ram-6 span.font-mono`).textContent = '0';
+                clearTimeout(cycleTimeout);
+                document.getElementById('data-point').style.display = 'none';
+            }
+
+            function getElementPosition(element) {
+                const rect = element.getBoundingClientRect();
+                const containerRect = document.querySelector('.fde-diagram').getBoundingClientRect();
+                return {
+                    x: rect.left - containerRect.left + rect.width / 2,
+                    y: rect.top - containerRect.top + rect.height / 2
+                };
+            }
+
+            async function moveDataPoint(from, to) {
+                const dataPoint = document.getElementById('data-point');
+                const startPos = getElementPosition(from);
+                const endPos = getElementPosition(to);
+                dataPoint.style.left = `${startPos.x}px`;
+                dataPoint.style.top = `${startPos.y}px`;
+                dataPoint.style.display = 'block';
+                await new Promise(resolve => setTimeout(resolve, 50));
+                dataPoint.style.left = `${endPos.x}px`;
+                dataPoint.style.top = `${endPos.y}px`;
+                await new Promise(resolve => setTimeout(resolve, 550));
+                dataPoint.style.display = 'none';
+            }
+            
+            async function runFdeCycle() {
+                fdeBtn.disabled = true;
+                fdeBtn.textContent = 'Running...';
+                const pcAddress = parseInt(values.pc.textContent);
+                const instructionData = ram[pcAddress];
+
+                if (instructionData.instruction === 'HALT') {
+                    fdeStage.textContent = 'Stage: Halt';
+                    fdeExplanation.textContent = 'The HALT instruction was found. The cycle is complete. Click Reset to run again.';
+                    fdeBtn.textContent = 'Reset';
+                    fdeBtn.disabled = false;
+                    fdeBtn.onclick = resetFDE;
+                    return;
+                }
+
+                function highlight(el) {
+                    document.querySelectorAll('.fde-component').forEach(c => c.classList.remove('highlight'));
+                    if (el) el.classList.add('highlight');
+                }
+
+                async function step(stage, explanation, component, delay = 1500) {
+                    highlight(component);
+                    fdeStage.textContent = `Stage: ${stage}`;
+                    fdeExplanation.textContent = explanation;
+                    await new Promise(resolve => setTimeout(resolve, delay));
+                }
+
+                await step('Fetch 1', 'The address from the Program Counter (PC) is copied to the Memory Address Register (MAR).', components.pc);
+                await moveDataPoint(components.pc, components.mar);
+                values.mar.textContent = pcAddress;
+                
+                await step('Fetch 2', `The PC is incremented to point to the next instruction.`, components.pc);
+                values.pc.textContent = pcAddress + 1;
+                
+                await step('Fetch 3', 'The instruction at the address in the MAR is fetched from RAM and placed in the Memory Data Register (MDR).', document.getElementById(`ram-${pcAddress}`));
+                await moveDataPoint(document.getElementById(`ram-${pcAddress}`), components.mdr);
+                values.mdr.textContent = instructionData.instruction;
+
+                await step('Fetch 4', 'The instruction is copied from the MDR to the Instruction Register (IR).', components.mdr);
+                await moveDataPoint(components.mdr, components.ir);
+                values.ir.textContent = instructionData.instruction;
+
+                await step('Decode', 'The Control Unit (CU) decodes the instruction in the IR to understand what to do.', components.cu);
+                
+                const [opcode, operandAddress] = instructionData.instruction.split(' ');
+                const operand = ram[parseInt(operandAddress)];
+
+                switch(opcode) {
+                    case 'LOAD':
+                        await step('Execute 1', `The address part of the instruction (${operandAddress}) is sent to the MAR.`, components.ir);
+                        await moveDataPoint(components.ir, components.mar);
+                        values.mar.textContent = operandAddress;
+                        
+                        await step('Execute 2', `The data at that address (${operand.data}) is fetched from RAM into the MDR.`, document.getElementById(`ram-${operandAddress}`));
+                        await moveDataPoint(document.getElementById(`ram-${operandAddress}`), components.mdr);
+                        values.mdr.textContent = operand.data;
+
+                        await step('Execute 3', 'The data is copied from the MDR to the Accumulator (AC).', components.mdr);
+                        await moveDataPoint(components.mdr, components.ac);
+                        values.ac.textContent = operand.data;
+                        break;
+                    case 'ADD':
+                        await step('Execute 1', `The address part of the instruction (${operandAddress}) is sent to the MAR.`, components.ir);
+                        await moveDataPoint(components.ir, components.mar);
+                        values.mar.textContent = operandAddress;
+
+                        await step('Execute 2', `The data at that address (${operand.data}) is fetched from RAM into the MDR.`, document.getElementById(`ram-${operandAddress}`));
+                        await moveDataPoint(document.getElementById(`ram-${operandAddress}`), components.mdr);
+                        values.mdr.textContent = operand.data;
+
+                        await step('Execute 3', `The ALU adds the value from the MDR to the value in the Accumulator. The result is stored back in the AC.`, components.ac);
+                        const result = parseInt(values.ac.textContent) + parseInt(values.mdr.textContent);
+                        values.ac.textContent = result;
+                        break;
+                    case 'STORE':
+                        await step('Execute 1', `The address part of the instruction (${operandAddress}) is sent to the MAR.`, components.ir);
+                        await moveDataPoint(components.ir, components.mar);
+                        values.mar.textContent = operandAddress;
+                        
+                        await step('Execute 2', 'The value from the Accumulator is copied to the MDR.', components.ac);
+                        await moveDataPoint(components.ac, components.mdr);
+                        values.mdr.textContent = values.ac.textContent;
+
+                        await step('Execute 3', `The data from the MDR is stored in RAM at the address specified by the MAR.`, components.mdr);
+                        await moveDataPoint(components.mdr, document.getElementById(`ram-${operandAddress}`));
+                        ram[parseInt(operandAddress)].data = parseInt(values.mdr.textContent);
+                        document.querySelector(`#ram-${operandAddress} span.font-mono`).textContent = values.mdr.textContent;
+                        break;
+                }
+                
+                highlight(null);
+                fdeBtn.disabled = false;
+                fdeBtn.textContent = 'Next Instruction';
+            }
+
+            fdeBtn.addEventListener('click', () => {
+                if (fdeBtn.textContent === 'Reset') {
+                    resetFDE();
+                    fdeBtn.onclick = runFdeCycle;
+                } else {
+                    runFdeCycle();
+                }
+            });
+
+            const archChartData = {
+                sequential: {
+                    labels: ['Single-Core CPU', 'Multi-Core CPU', 'GPU'],
+                    datasets: [{
+                        label: 'Relative Performance (Sequential Tasks)',
+                        data: [100, 110, 10],
+                        backgroundColor: ['#F472B6', '#EC4899', '#DB2777'],
+                    }]
+                },
+                multitasking: {
+                    labels: ['Single-Core CPU', 'Multi-Core CPU', 'GPU'],
+                    datasets: [{
+                        label: 'Relative Performance (Simple Multitasking)',
+                        data: [60, 100, 20],
+                        backgroundColor: ['#60A5FA', '#3B82F6', '#2563EB'],
+                    }]
+                },
+                parallel: {
+                    labels: ['Single-Core CPU', 'Multi-Core CPU', 'GPU'],
+                    datasets: [{
+                        label: 'Relative Performance (Massively Parallel Tasks)',
+                        data: [5, 40, 100],
+                        backgroundColor: ['#FBBF24', '#F59E0B', '#D97706'],
+                    }]
+                }
+            };
+
+            const ctx = document.getElementById('arch-chart').getContext('2d');
+            let archChart = new Chart(ctx, {
+                type: 'bar',
+                data: archChartData.sequential,
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    indexAxis: 'y',
+                    scales: {
+                        x: {
+                            beginAtZero: true,
+                            max: 120,
+                            title: { display: true, text: 'Relative Performance Score' }
+                        }
+                    },
+                    plugins: {
+                        legend: { display: false },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.dataset.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed.x !== null) {
+                                        label += context.parsed.x;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            const chartBtns = document.querySelectorAll('.chart-btn');
+            chartBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    chartBtns.forEach(b => b.classList.remove('active', 'bg-rose-600', 'text-white'));
+                    btn.classList.add('active', 'bg-rose-600', 'text-white');
+                    const type = btn.dataset.type;
+                    archChart.data = archChartData[type];
+                    archChart.update();
+                });
+            });
+
+            const quizData = [
+                { question: "During the Fetch stage of the FDE cycle, what does the Program Counter (PC) store before its value is updated?", options: ["The address of the data to be used by the current instruction.", "The address of the next instruction to be fetched.", "The current instruction being executed.", "The result of the last calculation."], answer: "The address of the next instruction to be fetched." },
+                { question: "A CPU's Control Unit (CU) is analogous to what part of a project management team?", options: ["The data entry specialist.", "The accountant.", "The project scheduler.", "The quality assurance tester."], answer: "The project scheduler." },
+                { question: "Which bus is unidirectional, and what is its primary purpose?", options: ["The Data Bus, for carrying instructions and data to and from memory.", "The Control Bus, for carrying status signals to and from memory.", "The Address Bus, for carrying memory locations from the CPU.", "The I/O Bus, for connecting to peripheral devices."], answer: "The Address Bus, for carrying memory locations from the CPU." },
+                { question: "An instruction 'ADD 10' is fetched from memory. What action is taken by the Control Unit during the Decode stage?", options: ["The CU adds 10 to the value in the Accumulator.", "The CU determines that the instruction is an 'ADD' operation and its operand is 10.", "The CU sends a signal to the MAR to load the data at address 10.", "The CU loads the next instruction from memory."], answer: "The CU determines that the instruction is an 'ADD' operation and its operand is 10." },
+                { question: "Why does a 64-bit address bus allow a computer to access more RAM than a 32-bit address bus?", options: ["The 64-bit bus can physically carry a larger quantity of data at once.", "The number of bits in the address bus determines the range of possible memory addresses.", "64-bit CPUs are inherently faster at fetching instructions.", "The 64-bit bus is more efficient at managing cache memory."], answer: "The number of bits in the address bus determines the range of possible memory addresses." },
+                { question: "What is the primary function of the Accumulator (AC) register?", options: ["To hold the memory address of the next instruction.", "To store data to be written to main memory.", "To hold the intermediate results of calculations.", "To store the memory address of the current instruction."], answer: "To hold the intermediate results of calculations." },
+                { question: "Which of the following describes the function of the Memory Data Register (MDR)?", options: ["It stores the address of the data being transferred.", "It holds data that has been copied from memory or is about to be copied to memory.", "It is responsible for decoding instructions.", "It tracks the location of the next instruction."], answer: "It holds data that has been copied from memory or is about to be copied to memory." },
+                { question: "Consider an FDE cycle. If a HALT instruction is fetched, which component is responsible for stopping the cycle?", options: ["The ALU.", "The PC.", "The CU.", "The MDR."], answer: "The CU." },
+                { question: "A multi-core CPU is performing a massively parallel task. Which of the following best explains why it is more efficient than a single-core CPU for this task?", options: ["It has a higher clock speed.", "It can use a faster data bus.", "It can execute multiple instructions at the same time.", "It has a larger cache memory."], answer: "It can execute multiple instructions at the same time." },
+                { question: "In the FDE cycle, the action of copying the instruction from the MDR to the IR occurs during which stage?", options: ["Fetch.", "Decode.", "Execute.", "Store."], answer: "Fetch." },
+                { question: "Which of the following is an example of pipelining in a CPU?", options: ["Executing one instruction from start to finish before fetching the next.", "Performing a calculation on one instruction while decoding a second one and fetching a third.", "Using a large number of simple cores to handle a single task.", "Accessing data from main memory instead of cache memory."], answer: "Performing a calculation on one instruction while decoding a second one and fetching a third." },
+                { question: "A scientist is running a large-scale simulation that requires millions of identical calculations. Which type of processor is best suited for this task?", options: ["A single-core CPU.", "A multi-core CPU.", "A GPU.", "A co-processor designed for I/O operations."], answer: "A GPU." },
+                { question: "Which register is updated by the Control Unit after an instruction has been fetched from memory?", options: ["The Program Counter (PC).", "The Memory Address Register (MAR).", "The Instruction Register (IR).", "The Accumulator (AC)."], answer: "The Program Counter (PC)." },
+                { question: "The Data Bus is described as a 'two-way highway'. This is because it is used for:", options: ["Carrying both addresses and data.", "Transferring data from the CPU to RAM and from RAM to the CPU.", "Sending signals from the CU and receiving signals from other components.", "Connecting the CPU to both the hard drive and the GPU."], answer: "Transferring data from the CPU to RAM and from RAM to the CPU." },
+                { question: "What is the relationship between the width of the Address Bus and a computer's maximum RAM capacity?", options: ["A wider bus increases the speed of data transfer, thus improving RAM access.", "The number of bits in the bus directly limits the number of memory locations that can be addressed.", "A wider bus reduces the total number of clock cycles required to access RAM.", "There is no direct relationship; RAM capacity is determined by the motherboard."], answer: "The number of bits in the bus directly limits the number of memory locations that can be addressed." },
+                { question: "Which of the following best describes the role of the Control Bus?", options: ["It carries the actual data between components.", "It specifies the source and destination of data.", "It carries command and status signals to synchronize operations.", "It is responsible for all mathematical calculations."], answer: "It carries command and status signals to synchronize operations." },
+                { question: "After a value is copied from the MDR to the Accumulator, the FDE cycle is in the middle of which stage?", options: ["Fetch.", "Decode.", "Execute.", "Store."], answer: "Execute." },
+                { question: "A CPU has a clock speed of 3.5 GHz. What does this value represent?", options: ["The number of instructions the CPU can execute per second.", "The total number of cores available for processing.", "The speed at which data can be transferred across the data bus.", "The number of clock cycles the CPU performs per second."], answer: "The number of clock cycles the CPU performs per second." },
+                { question: "What is the primary difference in task specialization between a CPU and a GPU?", options: ["CPUs are designed for sequential tasks, while GPUs are designed for parallel tasks.", "CPUs are slower but more power-efficient, while GPUs are faster but consume more power.", "CPUs are responsible for system operations, while GPUs are only used for gaming.", "CPUs have a large cache, while GPUs have a large instruction set."], answer: "CPUs are designed for sequential tasks, while GPUs are designed for parallel tasks." },
+                { question: "The Instruction Register (IR) holds an instruction 'LOAD 50'. Which part of this instruction is the opcode?", options: ["The number 50.", "The memory address.", "The word 'LOAD'.", "The entire string 'LOAD 50'."], answer: "The word 'LOAD'." },
+                { question: "A program instruction 'JUMP 100' is in the Instruction Register (IR). During the Execute stage, the Control Unit will likely modify which other register?", options: ["The MDR, to hold the value from memory.", "The MAR, to store the memory address 100.", "The PC, to jump to address 100.", "The AC, to store the result of the jump."], answer: "The PC, to jump to address 100." },
+                { question: "What is the main purpose of registers, and why are they so important for CPU performance?", options: ["They provide long-term storage for program data.", "They are the fastest form of memory and hold data the CPU is actively using.", "They act as an interface between the CPU and the hard drive.", "They store the results of all completed operations."], answer: "They are the fastest form of memory and hold data the CPU is actively using." },
+                { question: "In a 'Von Neumann architecture' computer, where are program instructions and data stored?", options: ["Instructions are in ROM, and data is in RAM.", "Instructions are in one memory unit and data is in another.", "Both instructions and data are stored in the same memory unit.", "Instructions are stored in cache, and data is stored in RAM."], answer: "Both instructions and data are stored in the same memory unit." },
+                { question: "Which of the following is NOT a primary component of the CPU?", options: ["Arithmetic Logic Unit (ALU).", "Control Unit (CU).", "Graphics Processing Unit (GPU).", "Registers."], answer: "Graphics Processing Unit (GPU)." },
+                { question: "A CPU is executing a 'STORE 10' instruction. The value to be stored in RAM is currently in the Accumulator (AC). Where is the address '10' copied to during the Execute stage?", options: ["The MDR.", "The PC.", "The IR.", "The MAR."], answer: "The MAR." },
+                { question: "The main benefit of a multi-core CPU for multitasking is that it can:", options: ["Process all tasks in a single, high-speed queue.", "Run multiple threads of a single application at the same time.", "Run multiple independent applications on separate cores.", "Switch between tasks faster than a single-core CPU."], answer: "Run multiple independent applications on separate cores." },
+                { question: "Which of the following statements about the Data Bus is true?", options: ["It is a one-way path for data from RAM to the CPU.", "It has a greater width than the Address Bus.", "Its width determines the number of bits that can be transferred simultaneously.", "It only transfers data, not instructions."], answer: "Its width determines the number of bits that can be transferred simultaneously." },
+                { question: "What is the role of the Program Counter (PC) in a program loop?", options: ["It decrements the count of the loop repetitions.", "It holds the value of the loop variable.", "It is set back to the address of the first instruction in the loop.", "It stores the intermediate results of the loop calculations."], answer: "It is set back to the address of the first instruction in the loop." },
+                { question: "In the FDE cycle, the Control Unit retrieves an instruction 'ADD 5'. This action of retrieving the instruction is part of the:", options: ["Fetch stage.", "Decode stage.", "Execute stage.", "Store stage."], answer: "Fetch stage." },
+                { question: "What is a primary advantage of a GPU over a CPU for graphics rendering?", options: ["GPUs have a higher clock speed.", "GPUs have fewer but more powerful cores.", "GPUs are specialized for parallel tasks, like rendering pixels.", "GPUs can only perform simple mathematical operations."], answer: "GPUs are specialized for parallel tasks, like rendering pixels." },
+                { question: "Which register acts as a temporary buffer for data that is either coming from or going to main memory?", options: ["PC.", "IR.", "MDR.", "MAR."], answer: "MDR." },
+                { question: "Which of the following tasks would benefit most from a CPU with a high clock speed and a large cache?", options: ["Rendering a complex 3D scene.", "Running a spreadsheet program with many formulas.", "Playing a high-resolution video game.", "Performing a large-scale data sort."], answer: "Running a spreadsheet program with many formulas." },
+                { question: "During the Decode stage, where does the Control Unit get the instruction to decode?", options: ["From the Program Counter.", "From the Accumulator.", "From the Instruction Register.", "From the Memory Data Register."], answer: "From the Instruction Register." },
+                { question: "What is the function of the Address Bus?", options: ["To carry instructions to the CPU.", "To carry data to and from main memory.", "To carry the addresses of memory locations to be read or written to.", "To send control signals to the memory controller."], answer: "To carry the addresses of memory locations to be read or written to." },
+                { question: "Which of the following best describes the role of the Arithmetic Logic Unit (ALU)?", options: ["Executing all instructions in a program.", "Performing mathematical and logical operations.", "Fetching instructions from memory.", "Controlling the flow of data within the CPU."], answer: "Performing mathematical and logical operations." },
+                { question: "An instruction 'SUBTRACT 5' is executed. Where will the result of this operation be stored?", options: ["In the Instruction Register.", "In the Memory Data Register.", "In the Program Counter.", "In the Accumulator."], answer: "In the Accumulator." },
+                { question: "What is the key purpose of the Control Bus in managing system components?", options: ["To send data to the correct addresses.", "To ensure that all components are synchronized.", "To carry the names of all the components in the system.", "To act as a backup for the Data Bus."], answer: "To ensure that all components are synchronized." },
+                { question: "What does the term 'instruction set' refer to in the context of a CPU?", options: ["The list of registers available in the CPU.", "The total number of instructions a CPU can execute per second.", "The set of machine code instructions that a particular CPU can understand and execute.", "The sequence of steps in the FDE cycle."], answer: "The set of machine code instructions that a particular CPU can understand and execute." },
+                { question: "A CPU has a 32-bit address bus. What is the maximum number of memory addresses it can directly access?", options: ["$2^{32}$ addresses.", "32 addresses.", "16 addresses.", "64 addresses."], answer: "$2^{32}$ addresses." },
+                { question: "Which of the following best explains the purpose of a CPU register?", options: ["A permanent storage location for instructions.", "A very high-speed storage location for data and instructions currently in use.", "A component that performs logical operations.", "An electrical pathway for data transfer."], answer: "A very high-speed storage location for data and instructions currently in use." },
+                { question: "The FDE cycle repeats continuously for a program. When does the Program Counter (PC) get updated?", options: ["During the Decode stage, before the instruction is sent to the ALU.", "During the Fetch stage, after its address is copied to the MAR.", "During the Execute stage, after the operation is complete.", "During the Store stage, after the result is written to memory."], answer: "During the Fetch stage, after its address is copied to the MAR." },
+                { question: "The Control Unit sends a signal to a memory chip to read data. This signal is carried by the:", options: ["Data Bus.", "Address Bus.", "Control Bus.", "Memory Bus."], answer: "Control Bus." },
+                { question: "Which component of the CPU is responsible for generating the signals that control the other components?", options: ["The Program Counter.", "The Arithmetic Logic Unit.", "The Instruction Register.", "The Control Unit."], answer: "The Control Unit." },
+                { question: "In a pipelined CPU, what allows for a higher throughput of instructions?", options: ["Executing all instructions in parallel on different cores.", "Processing different stages of multiple instructions at the same time.", "Using a single core to execute instructions faster.", "Avoiding the use of registers."], answer: "Processing different stages of multiple instructions at the same time." },
+                { question: "Which of the following is an example of an operation that would be performed by the Arithmetic Logic Unit (ALU)?", options: ["Reading an instruction from memory.", "Incrementing the Program Counter.", "Performing a logical comparison (e.g., 'equal to').", "Storing a value in the Accumulator."], answer: "Performing a logical comparison (e.g., 'equal to')." },
+                { question: "What is the primary role of the Memory Address Register (MAR)?", options: ["To hold the data that is being transferred.", "To hold the address of the memory location being accessed.", "To store the current instruction being decoded.", "To keep track of the next instruction to be fetched."], answer: "To hold the address of the memory location being accessed." },
+                { question: "The result of an 'ADD' operation is held in which register before it is potentially stored in memory?", options: ["The MAR.", "The MDR.", "The AC.", "The IR."], answer: "The AC." },
+                { question: "Which of the following is a characteristic of a GPU that makes it highly effective for parallel tasks?", options: ["A small number of very fast, powerful cores.", "A large number of simple, specialized cores.", "The ability to execute sequential tasks with high efficiency.", "Direct access to the hard drive."], answer: "A large number of simple, specialized cores." },
+                { question: "What is the purpose of the 'opcode' part of a machine code instruction?", options: ["It is the memory address of the data.", "It is the value of the operand.", "It specifies the operation to be performed.", "It is a flag to indicate if an error occurred."], answer: "It specifies the operation to be performed." },
+                { question: "Which of the following is NOT part of the Fetch-Decode-Execute cycle?", options: ["Fetching an instruction from memory.", "Translating an instruction into machine code.", "Executing an instruction by the ALU or CU.", "Updating the Program Counter."], answer: "Translating an instruction into machine code." },
+                { question: "A system with a 32-bit address bus can access a maximum of 4 GB of RAM. What is the reason for this limitation?", options: ["The physical memory modules are limited to 4 GB.", "The address bus can only carry 4 billion signals per second.", "The total number of unique addresses that can be represented is $2^{32}$.", "The Control Bus is too narrow to handle more than 4 GB."], answer: "The total number of unique addresses that can be represented is $2^{32}$." },
+                { question: "What happens during the Decode stage of the FDE cycle?", options: ["The instruction is copied from the MDR to the IR.", "The Control Unit determines the operation and the operands of the instruction.", "The ALU performs the arithmetic or logic operation.", "The result of the operation is stored in the Accumulator."], answer: "The Control Unit determines the operation and the operands of the instruction." },
+                { question: "Which of the following is the correct order of the stages in the FDE cycle?", options: ["Decode, Fetch, Execute.", "Fetch, Execute, Decode.", "Fetch, Decode, Execute.", "Execute, Fetch, Decode."], answer: "Fetch, Decode, Execute." },
+                { question: "Which of the following describes the relationship between a CPU's clock speed and its performance?", options: ["Higher clock speed always results in higher performance.", "Clock speed is the only factor in determining CPU performance.", "Clock speed is one factor, but performance also depends on the number of cores and cache size.", "There is no relationship between clock speed and performance."], answer: "Clock speed is one factor, but performance also depends on the number of cores and cache size." },
+                { question: "Which register is essential for the FDE cycle to function as a continuous loop?", options: ["The Accumulator (AC).", "The Memory Address Register (MAR).", "The Program Counter (PC).", "The Instruction Register (IR)."], answer: "The Program Counter (PC)." },
+                { question: "A CPU has a 16-bit data bus. How many bytes can be transferred from RAM to the CPU in a single clock cycle?", options: ["1 byte.", "2 bytes.", "4 bytes.", "8 bytes."], answer: "2 bytes." },
+                { question: "Which of the following is the most accurate statement about registers?", options: ["Registers are slower than L1 cache but faster than L2 cache.", "Registers are located on the main motherboard and store data for the CPU.", "Registers are the fastest type of memory and are located inside the CPU.", "Registers are a form of permanent storage for the operating system."], answer: "Registers are the fastest type of memory and are located inside the CPU." },
+                { question: "What is the purpose of the 'operand' part of an instruction?", options: ["It tells the CPU what to do.", "It specifies the data or the memory address to be used by the instruction.", "It is the result of the operation.", "It is the name of the operation being performed."], answer: "It specifies the data or the memory address to be used by the instruction." },
+                { question: "If the Control Unit decodes an instruction that requires an arithmetic calculation, which component will it send the instruction to for execution?", options: ["The Memory Data Register.", "The Program Counter.", "The Arithmetic Logic Unit.", "The Memory Address Register."], answer: "The Arithmetic Logic Unit." },
+                { question: "Which of the following is the most significant advantage of a multi-core CPU for a web server?", options: ["It can handle a higher clock speed.", "It can service multiple user requests concurrently.", "It requires less power to operate.", "It has a larger instruction set."], answer: "It can service multiple user requests concurrently." },
+                { question: "In the FDE cycle, the PC's value is placed into the MAR. This is done to:", options: ["Store the instruction itself.", "Store the data to be used by the instruction.", "Identify the memory location of the next instruction.", "Increment the address for the next cycle."], answer: "Identify the memory location of the next instruction." },
+                { question: "Which bus is responsible for synchronizing all system operations and carrying command signals?", options: ["Data Bus.", "Address Bus.", "Control Bus.", "Expansion Bus."], answer: "Control Bus." },
+                { question: "A CPU is executing a 'STORE 20' instruction. The value to be stored in RAM is currently in the AC. What is the last step in the Execute stage of this instruction?", options: ["The value from the AC is copied to the MAR.", "The value from the MDR is written to memory.", "The address '20' is sent to the MAR.", "The PC is incremented."], answer: "The value from the MDR is written to memory." },
+                { question: "What is the relationship between the width of the Data Bus and system performance?", options: ["A wider data bus allows for more data to be transferred per cycle, improving performance.", "A wider data bus increases the number of available memory addresses.", "A wider data bus allows for a faster clock speed.", "A wider data bus has no impact on system performance."], answer: "A wider data bus allows for more data to be transferred per cycle, improving performance." },
+                { question: "Which of the following correctly describes a feature of pipelining?", options: ["It requires multiple CPUs to work together.", "It allows for the sequential execution of instructions.", "It increases the number of instructions executed per second.", "It can only be used on single-core CPUs."], answer: "It increases the number of instructions executed per second." },
+                { question: "The Arithmetic Logic Unit (ALU) performs all of the following EXCEPT:", options: ["Addition.", "Logical comparisons.", "Subtraction.", "Decoding an instruction."], answer: "Decoding an instruction." },
+                { question: "A CPU has a 32-bit word size. This means the CPU can process data in chunks of:", options: ["32 instructions at a time.", "32 bytes at a time.", "32 bits at a time.", "32 words at a time."], answer: "32 bits at a time." },
+                { question: "A programmer wants to speed up a program that processes a large image pixel by pixel. Which of the following hardware improvements would provide the most significant performance gain?", options: ["Upgrading the CPU's cache memory.", "Increasing the width of the Address Bus.", "Using a faster single-core CPU.", "Adding a high-end GPU."], answer: "Adding a high-end GPU." },
+                { question: "Which of the following statements about the Control Unit (CU) is FALSE?", options: ["It directs the flow of data within the CPU.", "It sends control signals to other components.", "It is responsible for performing all arithmetic calculations.", "It fetches instructions from memory."], answer: "It is responsible for performing all arithmetic calculations." },
+                { question: "In a Von Neumann architecture, a single bus is used for both data and instructions. What can this lead to?", options: ["Faster instruction fetching.", "The Von Neumann bottleneck.", "Better parallel processing.", "More efficient memory management."], answer: "The Von Neumann bottleneck." },
+                { question: "The Instruction Register (IR) holds the instruction being currently executed. Where does this instruction come from?", options: ["The Program Counter (PC).", "The Memory Address Register (MAR).", "The Memory Data Register (MDR).", "The Accumulator (AC)."], answer: "The Memory Data Register (MDR)." },
+                { question: "What is the key role of the Program Counter in a typical FDE cycle loop?", options: ["To hold the address of the data that the current instruction is operating on.", "To increment itself after each instruction is fetched, ensuring the next instruction is located.", "To store the address where the result of an operation should be placed.", "To copy an instruction from RAM to the IR."], answer: "To increment itself after each instruction is fetched, ensuring the next instruction is located." },
+                { question: "In which stage of the FDE cycle does the CPU interact with an input/output device?", options: ["Fetch.", "Decode.", "Execute.", "None of the above."], answer: "Execute." },
+                { question: "A student is asked to create a diagram showing the logical flow of data from RAM to the CPU during a Fetch operation. Which two components would the student show connected by a bus carrying data?", options: ["PC and MAR.", "MAR and RAM.", "RAM and MDR.", "MDR and IR."], answer: "RAM and MDR." },
+                { question: "Which of the following is a key reason why registers are the fastest type of memory in a computer system?", options: ["They are a separate component from the CPU.", "They are built into the hard drive.", "They are located directly on the CPU chip.", "They use a dedicated external bus."], answer: "They are located directly on the CPU chip." },
+                { question: "What happens to the Instruction Register (IR) at the end of the Execute stage?", options: ["Its contents are copied to the Program Counter.", "Its contents are stored in the Accumulator.", "Its contents are transferred to the MDR.", "It holds the instruction until the next Fetch cycle begins."], answer: "It holds the instruction until the next Fetch cycle begins." },
+                { question: "The Control Unit (CU) is responsible for all of the following actions EXCEPT:", options: ["Sending a 'read' signal to memory.", "Incrementing the Program Counter.", "Decoding an instruction.", "Performing an arithmetic calculation."], answer: "Performing an arithmetic calculation." },
+                { question: "If the PC holds the value 100, what is the significance of this value?", options: ["It is the memory address of the instruction currently being executed.", "It is the number of instructions that have been executed.", "It is the memory address of the next instruction to be fetched.", "It is the value that will be loaded into the Accumulator."], answer: "It is the memory address of the next instruction to be fetched." },
+                { question: "Which of the following is an example of a logical operation performed by the ALU?", options: ["ADD.", "LOAD.", "COMPARE.", "STORE."], answer: "COMPARE." },
+                { question: "A computer has a 36-bit address bus. What is its theoretical maximum addressable memory capacity?", options: ["64 GB.", "16 GB.", "32 GB.", "1 TB."], answer: "64 GB." },
+                { question: "What is the primary function of the Memory Address Register (MAR) in a WRITE operation?", options: ["To hold the data that will be written.", "To hold the address where the data will be written.", "To hold the instruction to write the data.", "To hold the result of the write operation."], answer: "To hold the address where the data will be written." },
+                { question: "Which bus is responsible for carrying the result of an operation from the ALU back to a register?", options: ["The Address Bus.", "The Data Bus.", "The Control Bus.", "The I/O Bus."], answer: "The Data Bus." },
+                { question: "During the FDE cycle, the PC is incremented. What is the immediate effect of this action?", options: ["The CPU fetches a new instruction.", "The CPU begins to decode the current instruction.", "The CPU is prepared to fetch the next instruction in sequence.", "The ALU performs a calculation."], answer: "The CPU is prepared to fetch the next instruction in sequence." },
+                { question: "A major difference between a single-core CPU and a multi-core CPU from a programming perspective is:", options: ["Single-core CPUs use a different instruction set.", "Multi-core CPUs can execute multiple threads simultaneously.", "Multi-core CPUs are always faster, regardless of the task.", "Single-core CPUs do not have an ALU."], answer: "Multi-core CPUs can execute multiple threads simultaneously." },
+                { question: "Which of the following is the most accurate description of the Control Unit (CU)?", options: ["The component that holds data for the CPU to work with.", "The component that performs arithmetic operations.", "The component that coordinates all CPU operations.", "The component that stores program instructions."], answer: "The component that coordinates all CPU operations." },
+                { question: "In the FDE cycle, what happens immediately after an instruction has been fetched from memory and placed in the MDR?", options: ["The instruction is copied to the MAR.", "The instruction is copied to the IR.", "The PC is reset to zero.", "The ALU begins execution."], answer: "The instruction is copied to the IR." },
+                { question: "What is a key trade-off when using a GPU instead of a CPU for a task?", options: ["GPUs are more general-purpose but less efficient.", "GPUs are faster for sequential tasks but slower for parallel tasks.", "GPUs are highly specialized for parallel tasks, but perform poorly on sequential tasks.", "GPUs have a limited instruction set, so they can only do simple operations."], answer: "GPUs are highly specialized for parallel tasks, but perform poorly on sequential tasks." },
+                { question: "The Memory Address Register (MAR) and Memory Data Register (MDR) are directly involved in which two stages of the FDE cycle?", options: ["Fetch and Decode.", "Fetch and Execute.", "Decode and Execute.", "Execute and Store."], answer: "Fetch and Execute." },
+                { question: "What does the term 'instruction pipeline' primarily aim to increase?", options: ["The clock speed of the CPU.", "The number of cores in a CPU.", "The throughput of instructions.", "The size of the registers."], answer: "The throughput of instructions." },
+                { question: "Which of the following is a function of the Accumulator (AC)?", options: ["Acting as a counter for instructions.", "Holding the final result of a calculation before it is displayed.", "Storing the memory address of the next instruction.", "Providing a temporary storage for the results of the ALU."], answer: "Providing a temporary storage for the results of the ALU." },
+                { question: "A CPU's 'word size' refers to:", options: ["The number of instructions a program contains.", "The number of bits that a CPU processes at one time.", "The total amount of cache memory.", "The number of registers in the CPU."], answer: "The number of bits that a CPU processes at one time." },
+                { question: "Which of the following components would a computer system use to manage the flow of data between the CPU, RAM, and storage devices?", options: ["The ALU.", "The Control Unit.", "The buses.", "The registers."], answer: "The buses." },
+                { question: "A program instruction 'LOAD 10' is decoded. What information is passed to the MAR?", options: ["The opcode 'LOAD'.", "The operand '10'.", "The current value of the Program Counter.", "The entire instruction 'LOAD 10'."], answer: "The operand '10'." },
+                { question: "What is the primary role of the Data Bus?", options: ["To carry control signals.", "To carry memory addresses.", "To carry data and instructions.", "To carry the clock signal."], answer: "To carry data and instructions." },
+                { question: "Which stage of the FDE cycle involves the ALU?", options: ["Fetch.", "Decode.", "Execute.", "Store."], answer: "Execute." },
+                { question: "The Control Unit has just decoded an instruction that requires a value from memory. Which bus will it use to send the address of that memory location?", options: ["The Data Bus.", "The Control Bus.", "The Address Bus.", "The I/O Bus."], answer: "The Address Bus." },
+                { question: "Why is a GPU more effective for tasks like rendering graphics than a CPU?", options: ["A GPU has a single, very fast core.", "A GPU is designed for sequential processing.", "A GPU can perform the same simple calculation on many pieces of data at once.", "A GPU has a larger cache memory."], answer: "A GPU can perform the same simple calculation on many pieces of data at once." },
+                { question: "Which of the following components is primarily responsible for performing arithmetic operations?", options: ["The Control Unit.", "The Instruction Register.", "The Program Counter.", "The Arithmetic Logic Unit."], answer: "The Arithmetic Logic Unit." },
+                { question: "During the Fetch stage, the value of the Program Counter (PC) is copied to the Memory Address Register (MAR). What does the MAR's content represent?", options: ["The instruction to be fetched.", "The address of the next instruction to be fetched.", "The data to be operated on.", "The address of the data to be written."], answer: "The address of the next instruction to be fetched." },
+                { question: "After a 'STORE' instruction is executed, where is the data transferred from?", options: ["From the MDR to the AC.", "From the AC to the MDR.", "From the MDR to the IR.", "From the MAR to the MDR."], answer: "From the AC to the MDR." },
+                { question: "Which of the following is a primary characteristic of a multi-core CPU?", options: ["The ability to execute multiple instructions in a single clock cycle.", "The ability to run multiple processes simultaneously.", "The ability to perform a single calculation very quickly.", "The ability to process data only one bit at a time."], answer: "The ability to run multiple processes simultaneously." },
+                { question: "A CPU's cache memory is:", options: ["Slower than RAM but faster than registers.", "Slower than registers but faster than RAM.", "A form of permanent storage.", "Used as the main memory for the operating system."], answer: "Slower than registers but faster than RAM." },
+                { question: "In the FDE cycle, the action of interpreting an instruction is performed by the:", options: ["ALU.", "CU.", "PC.", "IR."], answer: "CU." },
+                { question: "Which of the following is NOT a purpose of the Control Bus?", options: ["Sending a 'write' signal to memory.", "Indicating that a device is ready.", "Carrying the address of a memory location.", "Synchronizing the clock signal between components."], answer: "Carrying the address of a memory location." },
+                { question: "The Memory Data Register (MDR) is sometimes called a 'buffer'. Why?", options: ["It stores data on a long-term basis.", "It holds data temporarily during a transfer between the CPU and memory.", "It performs calculations on the data it holds.", "It acts as a permanent storage location for program instructions."], answer: "It holds data temporarily during a transfer between the CPU and memory." },
+                { question: "Which of the following best describes the function of the Program Counter?", options: ["It stores the result of an operation.", "It holds the instruction being executed.", "It keeps track of where the next instruction is located in memory.", "It holds the data to be used by an instruction."], answer: "It keeps track of where the next instruction is located in memory." },
+                { question: "The ALU has just performed a subtraction. Where is the result of this operation stored?", options: ["The Instruction Register (IR).", "The Memory Address Register (MAR).", "The Memory Data Register (MDR).", "The Accumulator (AC)."], answer: "The Accumulator (AC)." },
+                { question: "Which of the following is true about a 64-bit computer architecture?", options: ["It can only run 64-bit programs.", "It can address a larger amount of RAM than a 32-bit architecture.", "It is always faster than a 32-bit architecture.", "It has a 64-bit instruction set."], answer: "It can address a larger amount of RAM than a 32-bit architecture." },
+                { question: "In the Fetch stage, the PC's value is copied to the MAR. This is done to:", options: ["Prepare the PC for the next instruction's address.", "Identify the location of the instruction to be fetched.", "Store the data from the MDR.", "Decode the instruction to be fetched."], answer: "Identify the location of the instruction to be fetched." },
+                { question: "Which component of the CPU is responsible for coordinating the fetching, decoding, and execution of instructions?", options: ["The Accumulator.", "The Arithmetic Logic Unit.", "The Control Unit.", "The buses."], answer: "The Control Unit." },
+                { question: "What is the primary benefit of using pipelining in a modern CPU?", options: ["It reduces the number of instructions in a program.", "It allows multiple instructions to be in different stages of the FDE cycle simultaneously.", "It increases the number of available registers.", "It simplifies the instruction set of the CPU."], answer: "It allows multiple instructions to be in different stages of the FDE cycle simultaneously." },
+                { question: "Which bus is responsible for transferring the numerical memory address of an instruction from the CPU to RAM?", options: ["Data Bus.", "Control Bus.", "Address Bus.", "System Bus."], answer: "Address Bus." },
+                { question: "A CPU has a 3.0 GHz clock speed. What is the clock cycle time in nanoseconds?", options: ["0.33 ns.", "3.0 ns.", "333.33 ns.", "3.33 ns."], answer: "0.33 ns." },
+                { question: "Which register holds the current instruction that has been fetched and is awaiting decoding?", options: ["Program Counter (PC).", "Memory Address Register (MAR).", "Memory Data Register (MDR).", "Instruction Register (IR)."], answer: "Instruction Register (IR)." },
+                { question: "In the FDE cycle, the action of performing the operation specified by the instruction is part of the:", options: ["Fetch stage.", "Decode stage.", "Execute stage.", "Store stage."], answer: "Execute." },
+                { question: "Which of the following best describes the role of the Arithmetic Logic Unit (ALU)?", options: ["Executing all instructions.", "Performing logical and arithmetic operations.", "Managing the flow of data.", "Fetching instructions."], answer: "Performing logical and arithmetic operations." },
+                { question: "After a 'LOAD 50' instruction is executed, the value from memory location 50 is now in the:", options: ["Program Counter.", "Instruction Register.", "Accumulator.", "Memory Address Register."], answer: "Accumulator." },
+                { question: "The Control Unit and the Arithmetic Logic Unit are the two main components of the CPU. What is the fundamental difference in their roles?", options: ["The CU handles input and output, while the ALU handles processing.", "The CU performs calculations, while the ALU directs data flow.", "The CU controls operations, while the ALU performs calculations.", "The CU fetches instructions, while the ALU stores them."], answer: "The CU controls operations, while the ALU performs calculations." },
+                { question: "Which bus carries signals to and from the CPU that tell components whether to read or write data?", options: ["The Data Bus.", "The Address Bus.", "The Control Bus.", "The I/O Bus."], answer: "The Control Bus." },
+                { question: "What is the main benefit of a multi-core CPU for an operating system?", options: ["It can only run one program at a time.", "It can handle multiple processes and threads simultaneously.", "It operates at a higher clock speed.", "It has a single, more powerful core."], answer: "It can handle multiple processes and threads simultaneously." },
+                { question: "During the FDE cycle, the PC is incremented. The value in the PC now points to:", options: ["The current instruction.", "The address of the data to be used.", "The address of the next instruction.", "The result of the current operation."], answer: "The address of the next instruction." },
+                { question: "What is the primary purpose of a GPU in a modern gaming PC?", options: ["To manage all system memory.", "To perform general-purpose calculations for the operating system.", "To accelerate the rendering of graphics and video.", "To control all I/O devices."], answer: "To accelerate the rendering of graphics and video." },
+                { question: "Which of the following is an example of an instruction that would be decoded by the Control Unit?", options: ["A logical operation like AND.", "A memory access command like LOAD.", "A simple addition operation.", "All of the above."], answer: "All of the above." },
+                { question: "In the FDE cycle, which register is used to fetch the contents of a memory location identified by the MAR?", options: ["The IR.", "The PC.", "The AC.", "The MDR."], answer: "The MDR." },
+                { question: "What is the primary purpose of the Memory Address Register?", options: ["To store data from RAM.", "To store the address of the data or instruction to be accessed.", "To store the address of the next instruction.", "To store the instruction being executed."], answer: "To store the address of the data or instruction to be accessed." },
+                { question: "A multi-core CPU is a good solution for tasks that are:", options: ["Inherently sequential and cannot be parallelized.", "Best handled by a single, powerful core.", "Easily broken down into smaller, parallel sub-tasks.", "Performed once and then stored in memory."], answer: "Easily broken down into smaller, parallel sub-tasks." },
+                { question: "Which of the following is an example of a logical operation?", options: ["Adding two numbers.", "Comparing two values.", "Multiplying two values.", "Copying a value from one register to another."], answer: "Comparing two values." },
+                { question: "The `LOAD` instruction is executed. The data is transferred from memory to the Accumulator. Which register acts as an intermediary buffer for this data?", options: ["The PC.", "The IR.", "The MAR.", "The MDR."], answer: "The MDR." },
+                { question: "A CPU has a 16-bit address bus. How many unique memory addresses can it access?", options: ["16.", "256.", "65,536.", "64."], answer: "65,536." },
+                { question: "What is the function of the `opcode` in a machine instruction?", options: ["It specifies the operand.", "It tells the CPU which operation to perform.", "It tells the CPU which memory address to use.", "It is the result of the operation."], answer: "It tells the CPU which operation to perform." },
+                { question: "The `ADD` instruction is a form of:", options: ["Memory access.", "Control operation.", "Arithmetic operation.", "Data transfer."], answer: "Arithmetic operation." },
+                { question: "In the context of the FDE cycle, what does 'Execute' mean?", options: ["Copying the instruction to the Instruction Register.", "Interpreting the instruction.", "Performing the operation specified by the instruction.", "Fetching the next instruction."], answer: "Performing the operation specified by the instruction." },
+                { question: "What is the main role of the Control Unit in the FDE cycle?", options: ["To perform calculations.", "To manage all data flow and timing signals.", "To store the results of operations.", "To hold the address of the next instruction."], answer: "To manage all data flow and timing signals." },
+                { question: "Which of the following correctly describes the Address Bus?", options: ["It is a two-way bus carrying both addresses and data.", "It is a unidirectional bus that carries memory addresses from the CPU.", "It is a bidirectional bus for carrying control signals.", "It is a unidirectional bus that carries data to and from RAM."], answer: "It is a unidirectional bus that carries memory addresses from the CPU." },
+                { question: "The Program Counter (PC) stores the address of the next instruction to be executed. How does its value change during a normal, sequential FDE cycle?", options: ["It is incremented by 1.", "It is decremented by 1.", "It is reset to 0.", "Its value remains constant."], answer: "It is incremented by 1." },
+                { question: "What is the purpose of the Accumulator (AC)?", options: ["To hold the memory address of the next instruction.", "To hold data transferred from memory.", "To hold the results of calculations performed by the ALU.", "To hold the current instruction being executed."], answer: "To hold the results of calculations performed by the ALU." },
+                { question: "Which of the following best explains the concept of a 'bus' in a computer system?", options: ["A dedicated software program that controls data flow.", "A high-speed cache memory.", "An electrical pathway for data, addresses, and control signals.", "A temporary storage location for instructions."], answer: "An electrical pathway for data, addresses, and control signals." },
+                { question: "In which stage of the FDE cycle is the Instruction Register (IR) used?", options: ["Fetch and Decode.", "Decode and Execute.", "Fetch and Execute.", "Fetch, Decode, and Execute."], answer: "Fetch, Decode, and Execute." },
+                { question: "Which of the following is a primary characteristic of a GPU compared to a CPU?", options: ["A GPU has fewer, but more powerful cores.", "A GPU is optimized for sequential processing.", "A GPU is designed for general-purpose computing.", "A GPU is specialized for massively parallel tasks."], answer: "A GPU is specialized for massively parallel tasks." },
+                { question: "The Memory Data Register (MDR) has two purposes. It holds data:", options: ["That is to be written to memory and data that has been read from memory.", "That is to be executed and data that has been decoded.", "That is to be transferred and the address of the transfer.", "That is a result of a calculation and the next instruction to be fetched."], answer: "That is to be written to memory and data that has been read from memory." },
+                { question: "A CPU has a 16-bit word size and a 32-bit address bus. How many bytes can be transferred from RAM in a single transfer?", options: ["2 bytes.", "4 bytes.", "8 bytes.", "16 bytes."], answer: "2 bytes." },
+                { question: "Which component of the CPU is responsible for generating the timing signals that synchronize all of its operations?", options: ["The ALU.", "The CU.", "The IR.", "The PC."], answer: "The CU." },
+                { question: "Which of the following best explains why pipelining is beneficial?", options: ["It ensures that only one instruction is processed at a time.", "It allows for different stages of multiple instructions to be in progress simultaneously.", "It increases the physical size of the CPU.", "It reduces the number of registers needed."], answer: "It allows for different stages of multiple instructions to be in progress simultaneously." },
+                { question: "During the Fetch stage, the instruction is transferred from RAM to the MDR. Which bus is used for this transfer?", options: ["Data Bus.", "Address Bus.", "Control Bus.", "I/O Bus."], answer: "Data Bus." },
+                { question: "What is the primary role of the Program Counter (PC) in an unconditional jump instruction?", options: ["It is set to the address of the jump destination.", "It is decremented by the number of instructions to jump.", "Its value remains unchanged.", "It is cleared to 0."], answer: "It is set to the address of the jump destination." },
+                { question: "Which of the following is an example of an operation performed by the Control Unit?", options: ["Calculating a sum.", "Comparing two values.", "Issuing a 'read' signal to the memory.", "Storing a value in memory."], answer: "Issuing a 'read' signal to the memory." },
+                { question: "After the ALU performs a calculation, where does it place the result?", options: ["In the Program Counter.", "In the Memory Address Register.", "In the Instruction Register.", "In the Accumulator."], answer: "In the Accumulator." },
+                { question: "Which bus is used to carry the address from the MAR to the main memory?", options: ["Data Bus.", "Address Bus.", "Control Bus.", "System Bus."], answer: "Address Bus." },
+                { question: "A CPU's word size is 32 bits. How many bytes is this?", options: ["2 bytes.", "4 bytes.", "8 bytes.", "16 bytes."], answer: "4 bytes." },
+                { question: "In the FDE cycle, the Instruction Register (IR) holds the instruction while it is being:", options: ["Fetched.", "Decoded.", "Executed.", "All of the above."], answer: "All of the above." },
+                { question: "The primary purpose of a co-processor like a GPU is to:", options: ["Replace the CPU.", "Assist the CPU by handling specialized tasks.", "Act as the main memory controller.", "Manage all I/O operations."], answer: "Assist the CPU by handling specialized tasks." },
+                { question: "Which of the following is a primary characteristic of the Control Bus?", options: ["It is used to transfer data.", "It is used to transfer memory addresses.", "It is used to transfer command and timing signals.", "It is a one-way bus."], answer: "It is used to transfer command and timing signals." },
+                { question: "During the Decode stage, the Control Unit will use the `opcode` to determine:", options: ["The address of the next instruction.", "The data to be used by the instruction.", "The operation to be performed.", "The number of clock cycles required."], answer: "The operation to be performed." },
+                { question: "What is the main role of the Memory Data Register?", options: ["To store the memory address of the data being transferred.", "To act as a temporary storage for data being moved between the CPU and memory.", "To store the next instruction to be executed.", "To store the result of an operation."], answer: "To act as a temporary storage for data being moved between the CPU and memory." },
+                { question: "Which of the following is true about a multi-core CPU?", options: ["It has a single core with a higher clock speed.", "It has a single instruction set for all cores.", "It is a form of parallel processing.", "It is only suitable for sequential tasks."], answer: "It is a form of parallel processing." },
+            ];
+
+            const quizContainer = document.getElementById('quiz-container');
+            const questionsPerLoad = 10;
+            let questionsLoaded = 0;
+
+            function loadQuiz() {
+                const startIndex = questionsLoaded;
+                const endIndex = Math.min(startIndex + questionsPerLoad, quizData.length);
+                
+                for (let i = startIndex; i < endIndex; i++) {
+                    const q = quizData[i];
+                    const questionEl = document.createElement('div');
+                    questionEl.className = 'mb-8';
+                    questionEl.innerHTML = `<h3 class="text-xl font-semibold mb-4">${i + 1}. ${q.question}</h3>`;
+                    
+                    const optionsEl = document.createElement('div');
+                    optionsEl.className = 'space-y-3';
+
+                    q.options.forEach(option => {
+                        const optionBtn = document.createElement('button');
+                        optionBtn.className = 'quiz-option block w-full text-left p-4 border-2 border-stone-200 rounded-lg hover:bg-stone-100';
+                        optionBtn.textContent = option;
+                        optionBtn.onclick = () => checkAnswer(q, option, optionsEl);
+                        optionsEl.appendChild(optionBtn);
+                    });
+                    questionEl.appendChild(optionsEl);
+                    quizContainer.appendChild(questionEl);
+                }
+                questionsLoaded = endIndex;
+                updateLoadMoreButton();
+            }
+
+            function updateLoadMoreButton() {
+                const existingBtn = document.getElementById('load-more-btn');
+                if (questionsLoaded < quizData.length) {
+                    if (!existingBtn) {
+                        const loadMoreBtn = document.createElement('button');
+                        loadMoreBtn.id = 'load-more-btn';
+                        loadMoreBtn.className = 'mt-8 block mx-auto bg-stone-200 text-stone-800 font-bold py-3 px-6 rounded-lg shadow-md hover:bg-stone-300 transition-colors';
+                        loadMoreBtn.textContent = `Load More Questions (${quizData.length - questionsLoaded} remaining)`;
+                        loadMoreBtn.onclick = loadQuiz;
+                        quizContainer.appendChild(loadMoreBtn);
+                    } else {
+                        existingBtn.textContent = `Load More Questions (${quizData.length - questionsLoaded} remaining)`;
+                    }
+                } else {
+                    if (existingBtn) {
+                        existingBtn.remove();
+                    }
+                    const scoreEl = document.getElementById('quiz-score');
+                    if(scoreEl) scoreEl.textContent = `Final Score: ${score} / ${quizData.length}`;
+                }
+            }
+
+            let score = 0;
+            let questionsAnswered = 0;
+            const answeredQuestions = new Set();
+
+            function checkAnswer(question, selectedOption, optionsContainer) {
+                if(answeredQuestions.has(question.question)) return;
+
+                const buttons = optionsContainer.querySelectorAll('button');
+                buttons.forEach(btn => btn.disabled = true);
+
+                const correctButton = Array.from(buttons).find(b => b.textContent === question.answer);
+                const selectedButton = Array.from(buttons).find(b => b.textContent === selectedOption);
+
+                if (selectedOption === question.answer) {
+                    selectedButton.classList.add('correct');
+                    score++;
+                } else {
+                    selectedButton.classList.add('incorrect');
+                    if (correctButton) correctButton.classList.add('correct');
+                }
+                questionsAnswered++;
+                answeredQuestions.add(question.question);
+                
+                const scoreEl = document.getElementById('quiz-score');
+                if (scoreEl) scoreEl.textContent = `Current Score: ${score} / ${questionsAnswered}`;
+
+                if (questionsAnswered === quizData.length) {
+                    if(scoreEl) scoreEl.textContent = `Final Score: ${score} / ${quizData.length}`;
+                    const loadMoreBtn = document.getElementById('load-more-btn');
+                    if(loadMoreBtn) loadMoreBtn.remove();
+                }
+            }
+
+            function drawPencilSketch(ctx, drawCommands) {
+                ctx.strokeStyle = '#292524';
+                ctx.fillStyle = '#F3EFE9';
+                ctx.lineWidth = 2;
+                ctx.font = "bold 14px 'Inter', sans-serif";
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.save();
+                ctx.clearRect(0, 0, ctx.canvas.width, ctx.canvas.height);
+
+                drawCommands.forEach(cmd => {
+                    if (cmd.type === 'rect_fill') {
+                        ctx.fillStyle = cmd.color || '#F3EFE9';
+                        ctx.fillRect(cmd.x, cmd.y, cmd.w, cmd.h);
+                    } else if (cmd.type === 'rect_stroke') {
+                        ctx.strokeRect(cmd.x, cmd.y, cmd.w, cmd.h);
+                    } else if (cmd.type === 'line') {
+                        ctx.beginPath();
+                        ctx.moveTo(cmd.x1, cmd.y1);
+                        ctx.lineTo(cmd.x2, cmd.y2);
+                        ctx.stroke();
+                    } else if (cmd.type === 'text') {
+                        ctx.fillStyle = '#292524';
+                        ctx.fillText(cmd.text, cmd.x, cmd.y);
+                    }
+                });
+                ctx.restore();
+            }
+
+            const coreCanvas = document.getElementById('core-canvas').getContext('2d');
+            drawPencilSketch(coreCanvas, [
+                { type: 'rect_fill', x: 50, y: 50, w: 300, h: 200 },
+                { type: 'rect_stroke', x: 50, y: 50, w: 300, h: 200 },
+                { type: 'rect_stroke', x: 75, y: 75, w: 100, h: 150 },
+                { type: 'rect_stroke', x: 225, y: 75, w: 100, h: 150 },
+                { type: 'text', text: 'CU', x: 125, y: 150 },
+                { type: 'text', text: 'ALU', x: 275, y: 150 },
+                { type: 'text', text: 'CPU', x: 200, y: 270 },
+            ]);
+
+            const registersCanvas = document.getElementById('registers-canvas').getContext('2d');
+            drawPencilSketch(registersCanvas, [
+                { type: 'rect_fill', x: 50, y: 50, w: 300, h: 200 },
+                { type: 'rect_stroke', x: 50, y: 50, w: 300, h: 200 },
+                { type: 'rect_stroke', x: 70, y: 70, w: 100, h: 30 }, { type: 'text', text: 'PC', x: 120, y: 85 },
+                { type: 'rect_stroke', x: 70, y: 110, w: 100, h: 30 }, { type: 'text', text: 'MAR', x: 120, y: 125 },
+                { type: 'rect_stroke', x: 70, y: 150, w: 100, h: 30 }, { type: 'text', text: 'MDR', x: 120, y: 165 },
+                { type: 'rect_stroke', x: 70, y: 190, w: 100, h: 30 }, { type: 'text', text: 'IR', x: 120, y: 205 },
+                { type: 'rect_stroke', x: 230, y: 110, w: 100, h: 30 }, { type: 'text', text: 'AC', x: 280, y: 125 },
+                { type: 'text', text: 'CPU Registers', x: 200, y: 270 },
+            ]);
+
+            const busesCanvas = document.getElementById('buses-canvas').getContext('2d');
+            drawPencilSketch(busesCanvas, [
+                { type: 'rect_fill', x: 50, y: 75, w: 100, h: 150 }, { type: 'rect_stroke', x: 50, y: 75, w: 100, h: 150 }, { type: 'text', text: 'CPU', x: 100, y: 150 },
+                { type: 'rect_fill', x: 250, y: 75, w: 100, h: 150 }, { type: 'rect_stroke', x: 250, y: 75, w: 100, h: 150 }, { type: 'text', text: 'RAM', x: 300, y: 150 },
+                { type: 'line', x1: 150, y1: 100, x2: 250, y2: 100 }, { type: 'text', text: 'Address Bus', x: 200, y: 90 },
+                { type: 'line', x1: 150, y1: 150, x2: 250, y2: 150 }, { type: 'line', x1: 250, y1: 160, x2: 150, y2: 160 }, { type: 'text', text: 'Data Bus', x: 200, y: 140 },
+                { type: 'line', x1: 150, y1: 200, x2: 250, y2: 200 }, { type: 'line', x1: 250, y1: 210, x2: 150, y2: 210 }, { type: 'text', text: 'Control Bus', x: 200, y: 190 },
+            ]);
+            
+            const singleCoreCanvas = document.getElementById('single-core-canvas').getContext('2d');
+            drawPencilSketch(singleCoreCanvas, [
+                { type: 'rect_fill', x: 25, y: 25, w: 150, h: 50 },
+                { type: 'rect_stroke', x: 25, y: 25, w: 150, h: 50 },
+                { type: 'text', text: 'Core 1', x: 100, y: 50 },
+            ]);
+
+            const multiCoreCanvas = document.getElementById('multi-core-canvas').getContext('2d');
+            drawPencilSketch(multiCoreCanvas, [
+                { type: 'rect_fill', x: 25, y: 25, w: 150, h: 50 },
+                { type: 'rect_stroke', x: 25, y: 25, w: 150, h: 50 },
+                { type: 'rect_stroke', x: 30, y: 30, w: 65, h: 40 },
+                { type: 'rect_stroke', x: 105, y: 30, w: 65, h: 40 },
+                { type: 'text', text: 'C1', x: 62.5, y: 50 },
+                { type: 'text', text: 'C2', x: 137.5, y: 50 },
+            ]);
+
+            const gpuCanvas = document.getElementById('gpu-canvas').getContext('2d');
+            drawPencilSketch(gpuCanvas, [
+                { type: 'rect_fill', x: 10, y: 10, w: 180, h: 80 },
+                { type: 'rect_stroke', x: 10, y: 10, w: 180, h: 80 },
+                ...Array.from({length: 8}).flatMap((_, i) => [
+                    { type: 'rect_stroke', x: 15 + i * 22, y: 15, w: 18, h: 18 },
+                    { type: 'rect_stroke', x: 15 + i * 22, y: 40, w: 18, h: 18 },
+                    { type: 'rect_stroke', x: 15 + i * 22, y: 65, w: 18, h: 18 },
+                ]),
+            ]);
+
+            const scoreEl = document.createElement('div');
+            scoreEl.id = 'quiz-score';
+            scoreEl.className = 'mt-8 text-center text-2xl font-bold';
+            quizContainer.appendChild(scoreEl);
+            
+            loadQuiz();
+        });
+    </script>
+</body>
+</html>
